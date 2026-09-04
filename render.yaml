@@ -1,0 +1,102 @@
+# Render blueprint for ReviveAI.
+#
+# Creates three things: a PostgreSQL database, the FastAPI backend, and the
+# React frontend as a static site.
+#
+# To deploy: Render dashboard -> New -> Blueprint -> connect this repository.
+# Render reads this file and provisions everything. See docs/DEPLOYMENT.md.
+#
+# Free-tier realities worth knowing before you demo:
+#   * The web service sleeps after 15 minutes idle. The first request after
+#     that takes ~50s to wake. Open the URL a minute before presenting.
+#   * The free database is deleted after 30 days.
+#   * 512 MB RAM, which is why training runs with --skip-importance.
+
+databases:
+  - name: reviveai-db
+    databaseName: reviveai
+    user: reviveai
+    plan: free
+
+services:
+  # ---------------------------------------------------------------- backend
+  - type: web
+    name: reviveai-api
+    runtime: python
+    plan: free
+    region: singapore          # closest Render region to India
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # bootstrap.py is idempotent: it seeds and trains on the first boot, then
+    # exits in under a second on every subsequent wake.
+    startCommand: python scripts/bootstrap.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reviveai-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: ARTIFACT_DIR
+        value: artifacts
+      # Dataset size for the hosted demo.
+      #
+      # Measured: 20,000 sessions -> 66 MB, which is only 6% of the 1 GB free
+      # database, but the smaller sample costs real model quality (RTO ROC-AUC
+      # fell from 0.93 to 0.78 against the full 100k set). 40,000 roughly
+      # halves that gap and still uses only ~130 MB.
+      #
+      # The binding constraint is RAM, not disk: the generator builds all rows
+      # in memory before writing, and the free instance has 512 MB. Raise this
+      # only on a paid instance.
+      - key: BOOTSTRAP_SESSIONS
+        value: "40000"
+      - key: SEED
+        value: "42"
+      # Render appends a suffix when a service name is taken, so the frontend's
+      # real URL is not knowable before the first deploy. "*" is correct for a
+      # public, unauthenticated, read-only demo -- the API turns credentials off
+      # automatically when it sees a wildcard. Narrow this to the actual static
+      # site URL if you ever add authentication.
+      - key: CORS_ORIGINS
+        value: "*"
+      # Business economics — same defaults as .env.example.
+      - key: GROSS_MARGIN
+        value: "0.35"
+      - key: EMAIL_COST
+        value: "0.5"
+      - key: SMS_COST
+        value: "0.25"
+      - key: WHATSAPP_COST
+        value: "0.35"
+      - key: CALL_COST
+        value: "18.0"
+      - key: MANUAL_REVIEW_COST
+        value: "45.0"
+
+  # --------------------------------------------------------------- frontend
+  - type: web
+    name: reviveai-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Vite inlines this at BUILD time, so changing it requires a rebuild,
+      # not just a restart.
+      - key: VITE_API_BASE
+        value: https://reviveai-api.onrender.com/api
+    routes:
+      # Single-page app: every unknown path must serve index.html, otherwise
+      # a refresh on /dashboard returns 404 instead of the app.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin

@@ -24,7 +24,7 @@ if config.config_file_name is not None:
 settings = get_settings()
 if not settings.database_url:
     raise RuntimeError("DATABASE_URL is not set. Copy .env.example to .env and fill it in.")
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.sqlalchemy_url)
 
 target_metadata = Base.metadata
 

@@ -44,12 +44,25 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+# A wildcard origin and credentialed requests are mutually exclusive: browsers
+# reject `Access-Control-Allow-Origin: *` whenever credentials are allowed, and
+# the failure looks like a network error rather than a CORS error. This API is
+# read-only and unauthenticated, so when CORS_ORIGINS is "*" we turn credentials
+# off and the wildcard actually works.
+_origins = settings.cors_origin_list
+_wildcard = "*" in _origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list,
-    allow_credentials=True,
+    allow_origins=["*"] if _wildcard else _origins,
+    allow_credentials=not _wildcard,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+)
+logger.info(
+    "CORS: %s (credentials %s)",
+    "any origin" if _wildcard else ", ".join(_origins),
+    "disabled" if _wildcard else "enabled",
 )
 
 for module in (

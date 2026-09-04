@@ -28,7 +28,7 @@ def get_engine() -> Engine:
                 "DATABASE_URL is not set. Copy .env.example to .env and fill it in."
             )
         _engine = create_engine(
-            settings.database_url,
+            settings.sqlalchemy_url,
             pool_pre_ping=True,
             pool_size=10,
             max_overflow=20,

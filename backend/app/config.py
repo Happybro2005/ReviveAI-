@@ -46,7 +46,28 @@ class Settings(BaseSettings):
     manual_review_cost: float = Field(default=45.0, alias="MANUAL_REVIEW_COST")
 
     @property
+    def sqlalchemy_url(self) -> str:
+        """Normalise the database URL for SQLAlchemy 2.0.
+
+        Managed hosts (Render, Heroku, Railway) hand out `postgres://...`,
+        which SQLAlchemy 2.0 no longer recognises as a dialect. Rewriting it
+        here means the platform's own connection string can be injected
+        unchanged, instead of being hand-edited on every deploy.
+        """
+        url = self.database_url.strip()
+        if url.startswith("postgres://"):
+            url = "postgresql+psycopg2://" + url[len("postgres://"):]
+        elif url.startswith("postgresql://"):
+            url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+        return url
+
+    @property
     def cors_origin_list(self) -> list[str]:
+        """Allowed browser origins.
+
+        `*` allows any origin, which is appropriate for a public read-only
+        demo but must not be combined with credentialed requests.
+        """
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     @property
