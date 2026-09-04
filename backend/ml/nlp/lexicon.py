@@ -55,10 +55,20 @@ ASPECT_TERMS: dict[str, list[str]] = {
         "packaging", "packed", "package", "packet", "box", "wrapping", "wrapped",
         "bubble wrap", "carton", "parcel", "seal", "sealed", "padding",
     ],
+    # Bare adjectives ("small", "loose", "tight") are deliberately NOT listed
+    # here. On their own they fire on unrelated complaints -- "the stitching
+    # came loose" is a quality defect and "the item was loose inside the box" is
+    # a packaging one, neither of which is a fit issue. Only terms that are
+    # unambiguously about sizing, or an adjective bound to a sizing context,
+    # count as SIZE_FIT.
     "SIZE_FIT": [
-        "size", "sizing", "fit", "fitting", "fits", "small", "smaller", "large", "larger",
-        "tight", "loose", "size chart", "measurement", "measurements", "true to size",
-        "runs small", "runs large", "length", "width", "waist",
+        "size", "sizes", "sizing", "size chart", "sizechart",
+        "fit", "fits", "fitting", "fitted",
+        "measurement", "measurements",
+        "true to size", "runs small", "runs large", "runs big", "runs tight",
+        "too small", "too large", "too big", "too tight", "too loose",
+        "one size", "two sizes", "half size",
+        "waist size", "chest size", "shoe size",
     ],
     "CUSTOMER_SUPPORT": [
         "support", "customer care", "customer service", "helpline", "agent",
