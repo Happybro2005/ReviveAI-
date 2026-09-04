@@ -74,18 +74,33 @@ def main() -> int:
 
     log(f"starting (sessions={sessions:,}, force={force})")
 
-    # ---- wait for the database, which may still be starting on a cold deploy
-    for attempt in range(1, 31):
+    # ---- wait for the database, which may still be provisioning on a first deploy
+    attempts = int(os.environ.get("DB_WAIT_ATTEMPTS", "60"))
+    for attempt in range(1, attempts + 1):
         try:
             with get_engine().connect() as conn:
                 conn.execute(text("SELECT 1"))
-            log("database reachable")
+            log(f"database reachable (attempt {attempt})")
             break
         except Exception as exc:
-            if attempt == 30:
-                log(f"ERROR: database unreachable after 30 tries: {exc}")
+            message = str(exc)
+            # A name-resolution failure is not a transient startup delay: the
+            # internal hostname only resolves inside the database's own region,
+            # so retrying for five minutes just hides a configuration error.
+            if "could not translate host name" in message or "Name or service not known" in message:
+                log("ERROR: the database hostname does not resolve.")
+                log("  The service and the database are almost certainly in")
+                log("  DIFFERENT REGIONS. Render's internal hostname only resolves")
+                log("  within one region. Set the same `region:` on both the")
+                log("  database and the web service in render.yaml.")
+                log(f"  original error: {message.splitlines()[0]}")
                 return 1
-            time.sleep(2)
+            if attempt == attempts:
+                log(f"ERROR: database unreachable after {attempts} attempts: {exc}")
+                return 1
+            if attempt % 10 == 0:
+                log(f"  still waiting for the database ({attempt}/{attempts}) ...")
+            time.sleep(5)
 
     # ---- 1. migrations (alembic is itself idempotent)
     if not run([sys.executable, "-m", "alembic", "upgrade", "head"], "migrations"):

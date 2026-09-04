@@ -17,6 +17,11 @@ databases:
     databaseName: reviveai
     user: reviveai
     plan: free
+    # MUST match the web service's region. Render's internal database hostname
+    # (dpg-xxxx-a) only resolves inside its own region, so a mismatch fails with
+    # "could not translate host name ... Name or service not known" — which reads
+    # like a DNS fault rather than the configuration error it actually is.
+    region: singapore
 
 services:
   # ---------------------------------------------------------------- backend
