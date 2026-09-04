@@ -1,0 +1,30 @@
+# Environment / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ML artifacts (regenerate with scripts/train_models.py)
+backend/artifacts/*.joblib
+backend/artifacts/*.json
+!backend/artifacts/.gitkeep
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
