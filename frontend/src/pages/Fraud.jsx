@@ -14,7 +14,7 @@ import {
   Tag,
 } from "../components/primitives";
 import { useAction, useApi } from "../hooks/useApi";
-import { money, num, titleCase } from "../lib/format";
+import { money, titleCase } from "../lib/format";
 
 const CLASSES = [
   { id: "", label: "All anomalies" },

@@ -13,7 +13,7 @@ import {
   Tag,
 } from "../components/primitives";
 import { useAction } from "../hooks/useApi";
-import { money, num, pct, titleCase } from "../lib/format";
+import { num, pct, titleCase } from "../lib/format";
 
 const CATEGORIES = ["Apparel", "Footwear", "Electronics", "Home", "Beauty", "Accessories"];
 

@@ -13,7 +13,7 @@ import {
   Tag,
 } from "../components/primitives";
 import { useApi } from "../hooks/useApi";
-import { money, moneyShort, num, pct, pctRaw, titleCase } from "../lib/format";
+import { money, moneyShort, num, pct, titleCase } from "../lib/format";
 
 export default function Interventions() {
   const [days, setDays] = useState(180);

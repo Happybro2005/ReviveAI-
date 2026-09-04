@@ -37,13 +37,15 @@ async function request(path, { method = "GET", body, signal, timeout = DEFAULT_T
     clearTimeout(timer);
     if (err.name === "AbortError") {
       throw new ApiError(
-        "The request timed out. The API may still be starting up.",
+        `The request to ${path} timed out after ${timeout / 1000}s. The API may still be starting up.`,
         { code: "timeout" },
       );
     }
+    // Report the URL actually attempted. Hard-coding a port here sends people
+    // to check the wrong one whenever VITE_API_BASE is overridden.
     throw new ApiError(
-      "Could not reach the API. Check that the backend is running on port 8000.",
-      { code: "network" },
+      `Could not reach the API at ${BASE}. Check that the backend is running there.`,
+      { code: "network", detail: `Tried: ${BASE}${path}` },
     );
   }
   clearTimeout(timer);

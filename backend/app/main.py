@@ -61,14 +61,43 @@ for module in (
 # --------------------------------------------------------------------------
 # Error handling: structured, logged, and never leaking internals to the client.
 # --------------------------------------------------------------------------
+def _serialisable_errors(errors: list[dict]) -> list[dict]:
+    """Make Pydantic's error list safe to JSON-encode.
+
+    When a `field_validator` raises a bare ValueError, Pydantic v2 puts the
+    exception *object* into ctx["error"]. Handing that to JSONResponse raises
+    "Object of type ValueError is not JSON serializable", which turns a 422 into
+    a 500 and hides the real validation message from the caller.
+    """
+    cleaned: list[dict] = []
+    for error in errors:
+        item = dict(error)
+        ctx = item.get("ctx")
+        if isinstance(ctx, dict):
+            item["ctx"] = {
+                k: (str(v) if isinstance(v, BaseException) else v)
+                for k, v in ctx.items()
+            }
+        # `input` can be any object the caller sent; keep it printable.
+        if "input" in item:
+            value = item["input"]
+            if not isinstance(value, (str, int, float, bool, type(None), list, dict)):
+                item["input"] = str(value)
+        cleaned.append(item)
+    return cleaned
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    errors = _serialisable_errors(exc.errors())
+    # Surface the first human-readable message rather than a generic sentence.
+    first = errors[0].get("msg") if errors else None
     return JSONResponse(
         status_code=422,
         content={
             "error": "validation_error",
-            "message": "The request body failed validation.",
-            "detail": exc.errors(),
+            "message": first or "The request body failed validation.",
+            "detail": errors,
         },
     )
 

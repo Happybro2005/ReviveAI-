@@ -13,7 +13,7 @@ import {
   Tag,
 } from "../components/primitives";
 import { useAction } from "../hooks/useApi";
-import { money, pct, pctRaw, titleCase } from "../lib/format";
+import { money, pct, pctRaw } from "../lib/format";
 
 const COURIERS = ["BlueDart", "Delhivery", "Ecom Express", "XpressBees", "IndiaPost"];
 const CITIES = ["Mumbai", "Delhi", "Bengaluru", "Patna", "Guwahati", "Bhubaneswar", "Lucknow"];

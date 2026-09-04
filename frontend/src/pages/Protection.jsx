@@ -15,7 +15,7 @@ import {
   Tag,
 } from "../components/primitives";
 import { useApi } from "../hooks/useApi";
-import { money, moneyShort, num, pct, titleCase } from "../lib/format";
+import { money, num, pct, titleCase } from "../lib/format";
 
 export default function Protection() {
   const [days, setDays] = useState(180);
