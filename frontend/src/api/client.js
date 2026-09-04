@@ -7,7 +7,19 @@
  * failure can say what actually went wrong instead of "something broke".
  */
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+/**
+ * Default to a RELATIVE path so requests are same-origin and the Vite dev proxy
+ * (see vite.config.js) forwards them to the backend.
+ *
+ * Calling an absolute http://127.0.0.1:8000 from a page served on
+ * http://localhost:5173 is cross-origin -- it depends on CORS, and it breaks
+ * whenever the browser resolves localhost to ::1 while the API binds only to
+ * 127.0.0.1. A relative path sidesteps both problems, and means the frontend
+ * does not need to know which port the backend is on.
+ *
+ * Set VITE_API_BASE only to point at a backend on another host or origin.
+ */
+const BASE = import.meta.env.VITE_API_BASE ?? "/api";
 const DEFAULT_TIMEOUT = 30000;
 
 export class ApiError extends Error {
