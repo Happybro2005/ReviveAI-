@@ -74,11 +74,11 @@ export default function Settings() {
               </dd>
             </dl>
 
-            {health.data.models_missing.length > 0 && (
+            {(health.data.models_missing?.length ?? 0) > 0 && (
               <div className="disclosure" style={{ marginTop: 14 }}>
                 <strong>Models missing.</strong>
                 <span>
-                  {health.data.models_missing.join(", ")} — run{" "}
+                  {(health.data.models_missing || []).join(", ")} — run{" "}
                   <code>cd backend &amp;&amp; python scripts/train_models.py</code> to train them.
                   Endpoints that need a missing model return 503 rather than a fabricated score.
                 </span>
@@ -87,7 +87,20 @@ export default function Settings() {
           </Panel>
         )}
 
-        {status.data && (
+        {status.data && !Array.isArray(status.data.models) && (
+          <Panel title="Model artifacts">
+            <div className="disclosure">
+              <strong>Unexpected response.</strong>
+              <span>
+                <code>/api/models/status</code> did not return a model list. Check that
+                the ReviveAI backend is the one answering on port 8000 — a different
+                project running on that port will return a different shape.
+              </span>
+            </div>
+          </Panel>
+        )}
+
+        {status.data && Array.isArray(status.data.models) && (
           <Panel title="Model artifacts" note={`Loaded from ${status.data.artifact_dir}`} flush>
             <div className="tablewrap">
               <table className="data">
@@ -154,7 +167,7 @@ export default function Settings() {
           </Panel>
         )}
 
-        {catalogue.data && (
+        {catalogue.data && Array.isArray(catalogue.data.protection) && (
           <Panel title="Effect assumptions">
             <div className="disclosure">
               <strong>Learned vs assumed.</strong>

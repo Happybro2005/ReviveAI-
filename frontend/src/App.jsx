@@ -3,6 +3,7 @@ import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom"
 
 import { api } from "./api/client";
 import { useApi } from "./hooks/useApi";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import Dashboard from "./pages/Dashboard";
 import Recovery from "./pages/Recovery";
@@ -168,11 +169,15 @@ function ScrollReset() {
 }
 
 export default function App() {
+  // Keying the boundary on the route clears a caught error when the user
+  // navigates away, so one broken page does not stay broken everywhere.
+  const { pathname } = useLocation();
   return (
     <div className="shell">
       <Rail />
       <main className="main">
         <ScrollReset />
+        <ErrorBoundary key={pathname}>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -204,6 +209,7 @@ export default function App() {
             }
           />
         </Routes>
+        </ErrorBoundary>
       </main>
     </div>
   );
