@@ -259,6 +259,7 @@ textarea {
   text-transform: uppercase;
 }
 
+.rail__group--overview .rail__verb { color: var(--ink-2); }
 .rail__group--recover .rail__verb { color: var(--retained); }
 .rail__group--protect .rail__verb { color: var(--leaking); }
 .rail__group--listen  .rail__verb { color: var(--series-6); }
@@ -295,6 +296,7 @@ textarea {
   border-left-color: currentColor;
 }
 
+.rail__group--overview .rail__link.is-active { border-left-color: var(--ink-2); }
 .rail__group--recover .rail__link.is-active { border-left-color: var(--retained); }
 .rail__group--protect .rail__link.is-active { border-left-color: var(--leaking); }
 .rail__group--listen  .rail__link.is-active { border-left-color: var(--series-6); }

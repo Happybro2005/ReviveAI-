@@ -21,7 +21,10 @@ import ModelInsights from "./pages/ModelInsights";
 import Settings from "./pages/Settings";
 
 /* The rail is grouped by the three verbs because that is the architecture:
-   RECOVER, PROTECT, LISTEN, and the engines they all share. */
+   RECOVER, PROTECT, LISTEN, and the engines they all share. The dashboard sits
+   above them because it is the view across all three, not part of any one. */
+const OVERVIEW = { to: "/dashboard", label: "Revenue intelligence" };
+
 const NAV = [
   {
     verb: "Recover",
@@ -96,6 +99,19 @@ function Rail() {
       </div>
 
       <div className="rail__nav">
+        <div className="rail__group rail__group--overview">
+          <div className="rail__grouphead">
+            <span className="rail__verb">Overview</span>
+            <span className="rail__grouprule" />
+          </div>
+          <NavLink
+            to={OVERVIEW.to}
+            className={({ isActive }) => `rail__link ${isActive ? "is-active" : ""}`}
+          >
+            {OVERVIEW.label}
+          </NavLink>
+        </div>
+
         {NAV.map((group) => (
           <div key={group.verb} className={`rail__group rail__group--${group.slug}`}>
             <div className="rail__grouphead">
