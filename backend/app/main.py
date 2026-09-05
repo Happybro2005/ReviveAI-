@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ml.common import ModelNotTrained
 
 from .config import SYNTHETIC_DATA_DISCLOSURE, get_settings
+from .startup import start_background_bootstrap, status as bootstrap_status
 from .routers import (
     customer,
     dashboard,
@@ -158,6 +159,17 @@ async def unhandled(request: Request, exc: Exception) -> JSONResponse:
             "message": "An unexpected error occurred. See the server log for details.",
         },
     )
+
+
+@app.on_event("startup")
+def _on_startup() -> None:
+    """Bind the port first, then seed and train in the background.
+
+    A hosted platform marks a deploy failed if the port is not bound quickly,
+    and seeding plus training takes minutes on a small instance. Doing the work
+    after startup keeps the service reachable throughout.
+    """
+    start_background_bootstrap()
 
 
 @app.get("/", tags=["system"])

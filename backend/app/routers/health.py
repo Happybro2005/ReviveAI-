@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from ..config import SYNTHETIC_DATA_DISCLOSURE
 from ..db import check_connection, get_db
 from ..deps import REQUIRED_MODELS, get_store
+from ..startup import status as bootstrap_status
 from ..schemas import HealthResponse
 
 router = APIRouter(tags=["system"])
@@ -33,13 +34,22 @@ def health() -> HealthResponse:
         except Exception:
             reviews_analysed = None
 
+    # While a hosted deployment is still seeding, "degraded" is the honest
+    # answer -- the service is up but not yet able to answer every endpoint.
+    boot = bootstrap_status()
+    if boot.get("enabled") and not boot.get("done"):
+        overall = "starting" if not boot.get("failed") else "degraded"
+    else:
+        overall = "ok" if ok and not missing else "degraded"
+
     return HealthResponse(
-        status="ok" if ok and not missing else "degraded",
+        status=overall,
         database="connected" if ok else "unavailable",
         database_detail=detail if not ok else detail.split(",")[0],
         models_trained=trained,
         models_missing=missing,
         reviews_analysed=reviews_analysed,
+        bootstrap=boot if boot.get("enabled") else None,
         disclosure=SYNTHETIC_DATA_DISCLOSURE,
     )
 

@@ -32,9 +32,11 @@ services:
     region: singapore          # closest Render region to India
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    # bootstrap.py is idempotent: it seeds and trains on the first boot, then
-    # exits in under a second on every subsequent wake.
-    startCommand: python scripts/bootstrap.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Bind the port immediately and seed in the background (RUN_BOOTSTRAP=1).
+    # Seeding and training take minutes on a 0.1-CPU instance; doing that before
+    # binding leaves Render scanning for an open port the whole time and the
+    # service unreachable. /api/health reports the bootstrap stage while it runs.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
@@ -45,6 +47,9 @@ services:
         value: "3.12.7"
       - key: ARTIFACT_DIR
         value: artifacts
+      # Seed and train on a background thread after the server is listening.
+      - key: RUN_BOOTSTRAP
+        value: "1"
       # Dataset size for the hosted demo.
       #
       # Measured: 20,000 sessions -> 66 MB, which is only 6% of the 1 GB free

@@ -35,6 +35,8 @@ class HealthResponse(BaseModel):
     models_trained: list[str]
     models_missing: list[str]
     reviews_analysed: bool | None = None
+    # Present only on a hosted deployment while the background bootstrap runs.
+    bootstrap: dict[str, Any] | None = None
     disclosure: str
 
 
