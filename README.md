@@ -6,6 +6,24 @@ An AI revenue intelligence platform for e-commerce. It predicts where a store is
 leaking money, explains *why* in plain terms, and then does the part most tools
 skip: works out whether acting is worth more than it costs.
 
+### Live demo
+
+| | |
+|---|---|
+| **Application** | **https://reviveai-web.onrender.com** |
+| API | https://reviveai-api.onrender.com |
+| Interactive API docs | https://reviveai-api.onrender.com/docs |
+| Health check | https://reviveai-api.onrender.com/api/health |
+
+> **First load takes ~50 seconds.** The free Render instance sleeps after 15
+> minutes of inactivity and has to wake up. It is not broken — give it a moment.
+> If you are demoing, open the link a couple of minutes beforehand.
+
+The deployed instance runs on 40,000 synthetic checkout sessions (the local
+setup below generates 100,000), so its model scores are slightly lower than the
+figures in the table further down. Live scores are always visible at
+`/api/models/metrics` and on the Model Insights page.
+
 > **Demo data is synthetic.** Model performance and financial figures are
 > simulated and should not be read as production results. Every API response
 > carries this disclosure.
@@ -136,7 +154,14 @@ Return risk 55.9%  — why?
 
 ---
 
-## Setup
+## Deploying your own
+
+`render.yaml` provisions the database, backend and frontend together on
+Render's free tier. Connect the repository as a Blueprint and it builds all
+three; `docs/DEPLOYMENT.md` covers the one manual step and the free-tier limits
+that matter for a demo.
+
+## Running it locally
 
 **Requires:** Python 3.11+, Node 18+, PostgreSQL 14+ running locally.
 
@@ -275,3 +300,6 @@ becomes a fabricated demand.
 Hinglish covering every technology, the causal data generator with its actual
 equations, the full NLP trace, all 27 endpoints, the bugs found during
 development, and viva questions with answers.
+
+`docs/DEPLOYMENT.md` — deploying to Render, the free-tier limits worth knowing
+before a demo, and troubleshooting.
